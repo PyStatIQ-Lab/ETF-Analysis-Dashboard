@@ -6,3 +6,6 @@ matplotlib
 seaborn
 scikit-learn
 plotly
+statsmodels
+keras
+tensorflow
