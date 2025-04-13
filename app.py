@@ -88,11 +88,22 @@ def train_predictive_models(etf_data):
 
     for ticker, df in etf_data.items():
         features = ['5_day_MA', '20_day_MA', '50_day_MA', 'RSI', 'MACD', 'Signal_Line', 'Volume']
-        X = df[features]
-        y = df['Target']
+        
+        # Drop rows with NaN in features or target
+        df_model = df[features + ['Target']].dropna()
 
+        X = df_model[features]
+        y = df_model['Target']
+
+        # Ensure X and y are clean
+        if len(X) == 0 or len(y) == 0:
+            print(f"Skipping {ticker} due to insufficient data after cleaning.")
+            continue
+
+        # Split data
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
 
+        # Create and train model pipeline
         model = Pipeline([
             ('scaler', MinMaxScaler()),
             ('regressor', RandomForestRegressor(n_estimators=100, random_state=42))
@@ -101,6 +112,11 @@ def train_predictive_models(etf_data):
         model.fit(X_train, y_train)
 
         y_pred = model.predict(X_test)
+
+        # Remove any possible NaNs from predictions (precaution)
+        if np.isnan(y_pred).any() or np.isnan(y_test).any():
+            print(f"Skipping evaluation for {ticker} due to NaNs in predictions.")
+            continue
 
         mse = mean_squared_error(y_test, y_pred)
         r2 = r2_score(y_test, y_pred)
