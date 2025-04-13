@@ -47,13 +47,13 @@ def preprocess_data(etf_data):
         df = etf_data[ticker].copy()
         
         # Calculate daily returns and moving averages
-        df['Daily_Return'] = df['Adj Close'].pct_change()
-        df['5_day_MA'] = df['Adj Close'].rolling(5).mean()
-        df['20_day_MA'] = df['Adj Close'].rolling(20).mean()
-        df['50_day_MA'] = df['Adj Close'].rolling(50).mean()
+        df['Daily_Return'] = df['Close'].pct_change()
+        df['5_day_MA'] = df['Close'].rolling(5).mean()
+        df['20_day_MA'] = df['Close'].rolling(20).mean()
+        df['50_day_MA'] = df['Close'].rolling(50).mean()
         
         # Calculate RSI (Relative Strength Index)
-        delta = df['Adj Close'].diff()
+        delta = df['Close'].diff()
         gain = delta.where(delta > 0, 0)
         loss = -delta.where(delta < 0, 0)
         
@@ -64,8 +64,8 @@ def preprocess_data(etf_data):
         df['RSI'] = 100 - (100 / (1 + rs))
         
         # Calculate MACD
-        exp12 = df['Adj Close'].ewm(span=12, adjust=False).mean()
-        exp26 = df['Adj Close'].ewm(span=26, adjust=False).mean()
+        exp12 = df['Close'].ewm(span=12, adjust=False).mean()
+        exp26 = df['Close'].ewm(span=26, adjust=False).mean()
         df['MACD'] = exp12 - exp26
         df['Signal_Line'] = df['MACD'].ewm(span=9, adjust=False).mean()
         
@@ -73,7 +73,7 @@ def preprocess_data(etf_data):
         df.dropna(inplace=True)
         
         # Add target variable (next day's return)
-        df['Target'] = df['Adj Close'].shift(-1) / df['Adj Close'] - 1
+        df['Target'] = df['Close'].shift(-1) / df['Close'] - 1
         
         processed[ticker] = df
     
@@ -115,7 +115,10 @@ def train_predictive_models(etf_data):
             'mse': mse,
             'r2': r2,
             'last_date': df.index[-1],
-            'last_price': df['Adj Close'].iloc[-1],
+            'last_price': df['
+            
+            
+            Close'].iloc[-1],
             'predicted_return': y_pred[-1]
         }
     
@@ -165,7 +168,7 @@ def visualize_etf_performance(etf_data, ticker):
     
     # Price and Moving Averages
     plt.subplot(3, 1, 1)
-    plt.plot(df['Adj Close'], label='Price')
+    plt.plot(df['Close'], label='Price')
     plt.plot(df['5_day_MA'], label='5-day MA')
     plt.plot(df['20_day_MA'], label='20-day MA')
     plt.plot(df['50_day_MA'], label='50-day MA')
